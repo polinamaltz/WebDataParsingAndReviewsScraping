@@ -31,21 +31,25 @@ products_info.head(5)
 
 
 chrome_options = Options()
+# Create Chrome options and set the remote debugging port to 9222.
 chrome_options.add_argument('--remote-debugging-port=9222')
-service = Service(executable_path='chromedriver.exe')  # указываем путь до драйвера
+service = Service(executable_path='chromedriver.exe')  # Set ChromeDriver executable path.
 
+# Define a function named "scroll_to_bottom" that scrolls the list to the last review.
 def scroll_to_bottom(elem, driver) -> False:
     """
-    Скроллим список до последнего отзыва
-    :param elem: Последний отзыв в списке
-    :param driver: Драйвер undetected_chromedriver
-    :return: None
+    Scroll the list to the last review
+
+    Parameters:
+    elem: Last review in the list
+    driver: chromedriver.exe
+    :return: found (True or False)
     """
     driver.execute_script("arguments[0].scrollIntoView();",elem)
     time.sleep(1)
     new_elem = driver.find_elements(By.CLASS_NAME, "comments__item")[-1]
     found = (elem == new_elem)
-    #print(found)
+    
     if found:
         return True
     scroll_to_bottom(new_elem, driver)
@@ -60,14 +64,14 @@ for index, row in products_info.iterrows():
         browser.get(url)
         time.sleep(3)
         length = 0
-        if rev_num > 0:  # если отзывов более 0, то пролистываем страницу
+        if rev_num > 0:  # If there are reviews (more than 0), scroll the page to load more
             rec = False
             while rec is False and length < 300:
                 elements = browser.find_elements(By.CLASS_NAME, "comments__item")
                 length = len(elements)
                 rec = scroll_to_bottom(elements[-1], browser)
         else:
-            print('У данного товара нет отзывов')
+            print('The product has no reviews.')
         time.sleep(3)
 
         feedbacks_list = browser.find_elements(By.CLASS_NAME, 'comments__item')
@@ -85,6 +89,8 @@ for index, row in products_info.iterrows():
         browser.quit()
 
     except Exception as ex:
+        # If any exception occurs, print the exception and close the browser
         print(ex)
         browser.quit()
+# Close the browser
 browser.quit()
